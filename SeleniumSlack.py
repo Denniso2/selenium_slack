@@ -1,3 +1,4 @@
+import argparse
 import os
 import pickle
 import time
@@ -18,10 +19,10 @@ class SlackAutomator:
     """Automate Slack login using saved cookies."""
 
     COOKIE_FILE = "slack_cookies.pkl"
-    WORKSPACE_URL = "https://yourworkspace.slack.com"
 
-    def __init__(self):
+    def __init__(self, workspace_url):
         self.driver = webdriver.Chrome()
+        self.workspace_url = workspace_url
 
     def cookies_exist(self):
         """Check if cookies file exists."""
@@ -65,7 +66,7 @@ class SlackAutomator:
 
     def load_cookies_and_login(self):
         """Load cookies from a file and attempt to log into Slack."""
-        self.driver.get(self.WORKSPACE_URL)
+        self.driver.get(self.workspace_url)
         self.load_cookies()
         self.driver.refresh()
 
@@ -85,7 +86,7 @@ class SlackAutomator:
         Args:
         - channel_id: ID of the Slack channel to navigate to.
         """
-        channel_url = f"{self.WORKSPACE_URL}/messages/{channel_id}/"
+        channel_url = f"{self.workspace_url}/messages/{channel_id}/"
         self.driver.get(channel_url)
 
         title_element = self.get_channel_title_element(channel_id)
@@ -114,9 +115,37 @@ class SlackAutomator:
         self.driver.quit()
 
 
+def main():
+    parser = argparse.ArgumentParser(description='Slack Automation Command Line Tool')
+
+    parser.add_argument('--workspace', type=str, required=True,
+                        help='URL of the Slack workspace, e.g., https://company.slack.com')
+    parser.add_argument('--login', action='store_true',
+                        help='Use this flag to log in manually to Slack and save cookies for future sessions.')
+    parser.add_argument('--channel', type=str,
+                        help='Provide the ID of the Slack channel to which you want to post a message.')
+    parser.add_argument('--message', type=str,
+                        help='The message you want to post to the specified Slack channel.')
+
+    args = parser.parse_args()
+
+    automator = SlackAutomator(args.workspace)
+
+    try:
+        if args.login:
+            automator.login_and_save_cookies()
+        elif args.channel and args.message:
+            automator.load_cookies_and_login()
+            automator.navigate_to_channel(args.channel)
+            automator.post_message(args.message)
+            print("Message posted successfully.")
+        else:
+            print("Invalid arguments. Use --help for usage information.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        automator.quit()
+
+
 if __name__ == "__main__":
-    automator = SlackAutomator()
-    automator.load_cookies_and_login()
-    automator.navigate_to_channel("", "")
-    automator.post_message("hey there tester")
-    automator.quit()
+    main()
