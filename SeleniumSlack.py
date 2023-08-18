@@ -72,7 +72,13 @@ class SlackAutomator:
         # To verify if the login was successful
         self.is_logged_in()
 
-    def navigate_to_channel(self, channel_id, channel_name):
+    def get_channel_title_element(self, channel_id):
+        try:
+            return self.driver.find_element(By.CSS_SELECTOR, ".p-view_header__channel_title")
+        except NoSuchElementException:
+            raise ValueError(f"Channel with id {channel_id} does not exist")
+
+    def navigate_to_channel(self, channel_id):
         """
         Navigate to a specific Slack channel using its channel_id.
 
@@ -82,8 +88,9 @@ class SlackAutomator:
         channel_url = f"{self.WORKSPACE_URL}/messages/{channel_id}/"
         self.driver.get(channel_url)
 
-        if channel_name not in self.driver.title:
-            raise ValueError(f"Failed to navigate to the correct channel. Current title: {self.driver.title}")
+        title_element = self.get_channel_title_element(channel_id)
+        if title_element.text == "unknown-channel":
+            raise ValueError(f"Channel with id {channel_id} does not exist")
 
     def post_message(self, message, timeout=30):
         """
