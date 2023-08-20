@@ -118,8 +118,8 @@ class SlackAutomator:
 def main():
     parser = argparse.ArgumentParser(description='Slack Automation Command Line Tool')
 
-    parser.add_argument('--workspace', type=str, required=True,
-                        help='URL of the Slack workspace, e.g., https://company.slack.com')
+    parser.add_argument('--workspace', type=str, default="",
+                        help='URL of the Slack workspace, e.g., https://company.slack.com. Not required for login.')
     parser.add_argument('--login', action='store_true',
                         help='Use this flag to log in manually to Slack and save cookies for future sessions.')
     parser.add_argument('--channel', type=str,
@@ -134,7 +134,7 @@ def main():
     try:
         if args.login:
             automator.login_and_save_cookies()
-        elif args.channel and args.message:
+        elif args.channel and args.message and args.workspace:
             automator.load_cookies_and_login()
             automator.navigate_to_channel(args.channel)
             automator.post_message(args.message)

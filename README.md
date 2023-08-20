@@ -35,7 +35,7 @@ This tool allows you to log into Slack manually, save the session cookies for fu
 1. Manually log into Slack and save cookies for future sessions:
 
    ```bash
-   python selenium_slack.py --workspace [Your Workspace URL] --login
+   python selenium_slack.py --login
    ```
 
 2. Send a message to a specified channel:
