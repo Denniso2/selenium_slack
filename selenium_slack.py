@@ -1,5 +1,6 @@
 import argparse
 import random
+import re
 import pickle
 import time
 
@@ -23,6 +24,11 @@ class SlackAutomator:
     def __init__(self, workspace_url):
         self.driver = webdriver.Chrome()
         self.workspace_url = workspace_url
+
+    def validate_workspace_url(self, workspace_url):
+        pattern = r'^https://[\w\-]+(\.enterprise)?\.slack\.com$'
+        if not re.match(pattern, workspace_url):
+            raise ValueError("Invalid workspace URL format. It should be of the form https://company.slack.com or https://company.enterprise.slack.com")
 
     def is_logged_in(self, timeout=30):
         """
@@ -128,6 +134,7 @@ def main():
         if args.login:
             automator.login_and_save_cookies()
         elif args.channel and args.message and args.workspace:
+            automator.validate_workspace_url(args.workspace)
             selected_message = random.choice(args.message)  # Choose a random message
             automator.load_cookies_and_login()
             automator.navigate_to_channel(args.channel)
