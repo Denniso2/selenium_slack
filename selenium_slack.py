@@ -4,7 +4,7 @@ import pickle
 import time
 
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException, WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -23,10 +23,6 @@ class SlackAutomator:
     def __init__(self, workspace_url):
         self.driver = webdriver.Chrome()
         self.workspace_url = workspace_url
-
-    def cookies_exist(self):
-        """Check if cookies file exists."""
-        return os.path.exists(self.COOKIE_FILE)
 
     def is_logged_in(self, timeout=30):
         """
@@ -49,9 +45,6 @@ class SlackAutomator:
 
     def load_cookies(self):
         """Load cookies from a file and add them to the browser session."""
-        if not self.cookies_exist():
-            return
-
         with open(self.COOKIE_FILE, "rb") as file:
             cookies = pickle.load(file)
             for cookie in cookies:
@@ -141,10 +134,20 @@ def main():
             print("Message posted successfully.")
         else:
             print("Invalid arguments. Use --help for usage information.")
+    except NotLoggedInException:
+        print("Error: You're not logged in to Slack. Please ensure you have valid cookies or use the --login flag.")
+    except (IOError, pickle.UnpicklingError):
+        print("Error: There was an issue with the cookie file. It might be corrupted, missing, or there might be permission issues.")
+    except NoSuchElementException:
+        print("Error: A necessary web element was not found. Slack's UI might have changed.")
+    except TimeoutException:
+        print("Error: Operation timed out. Ensure you have a stable internet connection.")
+    except WebDriverException:
+        print("Error: There was an issue with the WebDriver. Ensure the browser driver is correctly installed and up-to-date.")
+    except ValueError as e:
+        print(f"Error: {e}")
     except Exception as e:
-        print(f"An error occurred: {e}")
-    finally:
-        automator.quit()
+        print(f"An unexpected error occurred: {e}")
 
 
 if __name__ == "__main__":
