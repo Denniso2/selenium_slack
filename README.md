@@ -43,6 +43,12 @@ This tool allows you to log into Slack manually, save the session cookies for fu
    ```bash
    python selenium_slack.py --workspace [Your Workspace URL] --channel [Channel ID] --message "Your message here"
    ```
+   
+3. Send a random message to a specified channel:
+
+   ```bash
+   python selenium_slack.py --workspace [Your Workspace URL] --channel [Channel ID] --message "Message 1" "Message 2" "Message 3"
+   ```
 
 For more detailed information about command arguments, run:
 

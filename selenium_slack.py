@@ -1,5 +1,5 @@
 import argparse
-import os
+import random
 import pickle
 import time
 
@@ -117,8 +117,8 @@ def main():
                         help='Use this flag to log in manually to Slack and save cookies for future sessions.')
     parser.add_argument('--channel', type=str,
                         help='Provide the ID of the Slack channel to which you want to post a message.')
-    parser.add_argument('--message', type=str,
-                        help='The message you want to post to the specified Slack channel.')
+    parser.add_argument('--message', type=str, nargs='+',
+                        help='The message you want to post to the specified Slack channel. If multiple one will be selected randomly.')
 
     args = parser.parse_args()
 
@@ -128,10 +128,11 @@ def main():
         if args.login:
             automator.login_and_save_cookies()
         elif args.channel and args.message and args.workspace:
+            selected_message = random.choice(args.message)  # Choose a random message
             automator.load_cookies_and_login()
             automator.navigate_to_channel(args.channel)
-            automator.post_message(args.message)
-            print("Message posted successfully.")
+            automator.post_message(selected_message)
+            print(f"Message '{selected_message}' posted successfully.")
         else:
             print("Invalid arguments. Use --help for usage information.")
     except NotLoggedInException:
