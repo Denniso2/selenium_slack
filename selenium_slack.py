@@ -21,8 +21,11 @@ class SlackAutomator:
 
     COOKIE_FILE = "slack_cookies.pkl"
 
-    def __init__(self, workspace_url):
-        self.driver = webdriver.Chrome()
+    def __init__(self, workspace_url, headless=False):
+        chrome_options = webdriver.ChromeOptions()
+        if headless:
+            chrome_options.add_argument("--headless")
+        self.driver = webdriver.Chrome(options=chrome_options)
         self.workspace_url = workspace_url
 
     def validate_workspace_url(self, workspace_url):
@@ -107,7 +110,7 @@ class SlackAutomator:
         # Clicking the "send" button, adjust this if Slack's UI changes
         send_button = self.driver.find_element(By.XPATH, "//button[@data-qa='texty_send_button']")
         send_button.click()
-        time.sleep(10)
+        time.sleep(5)
 
     def quit(self):
         """Quits the browser."""
@@ -120,15 +123,17 @@ def main():
     parser.add_argument('--workspace', type=str, default="",
                         help='URL of the Slack workspace, e.g., https://company.slack.com. Not required for login.')
     parser.add_argument('--login', action='store_true',
-                        help='Use this flag to log in manually to Slack and save cookies for future sessions.')
+                        help='Use this flag to log in manually to Slack and save cookies for future sessions. Remember to accept cookies and enter your desired workspace at least once.')
     parser.add_argument('--channel', type=str,
                         help='Provide the ID of the Slack channel to which you want to post a message.')
     parser.add_argument('--message', type=str, nargs='+',
                         help='The message you want to post to the specified Slack channel. If multiple one will be selected randomly.')
+    parser.add_argument('--headless', action='store_true',
+                        help='Use this flag to run the script in headless mode without displaying the browser UI.')
 
     args = parser.parse_args()
 
-    automator = SlackAutomator(args.workspace)
+    automator = SlackAutomator(args.workspace, headless=args.headless)
 
     try:
         if args.login:
