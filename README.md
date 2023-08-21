@@ -1,6 +1,6 @@
 # Slack Automation Command Line Tool
 
-This tool allows you to log into Slack manually, save the session cookies for future sessions, and send messages to specified channels using command line arguments.
+This tool allows you to log into Slack manually, save the session cookies for future sessions and send messages to specified channels using command line arguments.
 
 ## Prerequisites
 
@@ -49,6 +49,13 @@ This tool allows you to log into Slack manually, save the session cookies for fu
    ```bash
    python selenium_slack.py --workspace [Your Workspace URL] --channel [Channel ID] --message "Message 1" "Message 2" "Message 3"
    ```
+   
+4. Run the tool in headless mode (without displaying the browser UI):
+
+   ```bash
+   python selenium_slack.py --workspace [Your Workspace URL] --channel [Channel ID] --message "Your message here" --headless
+   ```
+   
 
 For more detailed information about command arguments, run:
 
