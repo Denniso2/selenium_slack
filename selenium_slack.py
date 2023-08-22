@@ -19,14 +19,13 @@ class NotLoggedInException(Exception):
 class SlackAutomator:
     """Automate Slack login using saved cookies."""
 
-    COOKIE_FILE = "slack_cookies.pkl"
-
-    def __init__(self, workspace_url, headless=False):
+    def __init__(self, workspace_url, cookie_file, headless=False):
         chrome_options = webdriver.ChromeOptions()
         if headless:
             chrome_options.add_argument("--headless")
         self.driver = webdriver.Chrome(options=chrome_options)
         self.workspace_url = workspace_url
+        self.cookie_file = cookie_file
 
     def validate_workspace_url(self, workspace_url):
         pattern = r'^https://[\w\-]+(\.enterprise)?\.slack\.com$'
@@ -49,12 +48,12 @@ class SlackAutomator:
 
     def save_cookies(self):
         """Save cookies to a file."""
-        with open(self.COOKIE_FILE, "wb") as file:
+        with open(self.cookie_file, "wb") as file:
             pickle.dump(self.driver.get_cookies(), file)
 
     def load_cookies(self):
         """Load cookies from a file and add them to the browser session."""
-        with open(self.COOKIE_FILE, "rb") as file:
+        with open(self.cookie_file, "rb") as file:
             cookies = pickle.load(file)
             for cookie in cookies:
                 self.driver.add_cookie(cookie)
@@ -124,6 +123,8 @@ def main():
                         help='URL of the Slack workspace, e.g., https://company.slack.com. Not required for login.')
     parser.add_argument('--login', action='store_true',
                         help='Use this flag to log in manually to Slack and save cookies for future sessions. Remember to accept cookies and enter your desired workspace at least once.')
+    parser.add_argument('--cookie-file', type=str, default="slack_cookies.pkl",
+                        help='Path to the cookie file. Default is "slack_cookies.pkl" in the current directory.')
     parser.add_argument('--channel', type=str,
                         help='Provide the ID of the Slack channel to which you want to post a message.')
     parser.add_argument('--message', type=str, nargs='+',
@@ -133,7 +134,7 @@ def main():
 
     args = parser.parse_args()
 
-    automator = SlackAutomator(args.workspace, headless=args.headless)
+    automator = SlackAutomator(workspace_url=args.workspace, cookie_file=args.cookie_file, headless=args.headless)
 
     try:
         if args.login:
@@ -161,6 +162,8 @@ def main():
         print(f"Error: {e}")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+    finally:
+        automator.quit()
 
 
 if __name__ == "__main__":
